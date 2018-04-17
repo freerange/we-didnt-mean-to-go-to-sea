@@ -79,11 +79,11 @@ class Game
 
   def adverb(volume)
     case volume
-    when 0..1
+    when 0...1
       "very loudly"
-    when 1..2
+    when 1...2
       "loudly"
-    when 2..3
+    when 2...3
       "in the distance"
     else
       "barely"
@@ -94,21 +94,38 @@ end
 if __FILE__ == $0
 
   features = [
-    Feature.new('Buoy 1', 3, 6, 1),
-    Feature.new('Buoy 2', 5, 8, 1),
-    Feature.new('Buoy 1', 1, 10, 3)
+    Feature.new('Buoy', 7, 7, 1),
+    Feature.new('Buoy', 7, 4, 1),
+    Feature.new('Buoy', 3, 2, 1),
+    Feature.new('Buoy', 4, 6, 1),
+    Feature.new('Lighthouse', 4, 8, 2)
   ]
   map = Map.new(features)
   game = Game.new(map)
 
-  start_state = State.new(5, 5)
-  ack, state = game.step(start_state, :listen)
-  p [ack, state]
-  ack, state = game.step(state, :go_north)
-  ack, state = game.step(state, :listen)
-  p [ack, state]
-  ack, state = game.step(state, :go_north)
-  ack, state = game.step(state, :listen)
-  p [ack, state]
+  state = State.new(Random.rand(5)+3, Random.rand(5)+3)
+  while true do
+    print "> "
+    command = gets.chomp
+    ack, state = case command
+    when "north"
+      game.step(state, :go_north)
+    when "south"
+      game.step(state, :go_south)
+    when "east"
+      game.step(state, :go_east)
+    when "west"
+      game.step(state, :go_west)
+    when "listen"
+      game.step(state, :listen)
+    else
+      ["Huh?", state ]
+    end
+    if state.same_position?(2,5)
+      print "You're home"
+      exit 0
+    end
+    puts ack
+  end
 end
 
