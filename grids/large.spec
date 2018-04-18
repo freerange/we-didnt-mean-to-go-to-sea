@@ -1,0 +1,11 @@
+image-margin = 20mm 
+image-height = 297mm
+image-width = 210mm
+rows = 10
+columns = 10
+coord-format = ""
+grid-grain = v
+center-style = d
+coord-font = Courier
+output = ps
+outfile = large.ps

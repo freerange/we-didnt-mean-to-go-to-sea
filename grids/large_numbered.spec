@@ -1,0 +1,9 @@
+image-margin = 20mm 
+image-height = 297mm
+image-width = 210mm
+rows = 10
+columns = 10
+coord-font = Courier
+grid-grain = v
+output = ps
+outfile = large_numbered.ps

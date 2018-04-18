@@ -1,0 +1,248 @@
+%!PS-Adobe-3.0 EPSF-3.0
+%%Title: 
+%%Creator: mkhexgrid 0.1.1
+%%Pages: 1
+%%BoundingBox: 0 0 596 842
+%%EndComments
+%%BeginProlog
+save countdictstack mark newpath /showpage {} def /setpagedevice {pop} def
+
+%
+% Parameters
+%
+/#copies 1 def
+
+/mleft 56.6929 def
+/mright 56.6929 def
+/mtop 56.6929 def
+/mbottom 56.6929 def
+
+/hex_side   31.0251 def
+/hex_height { 2 hex_side mul 60 sin mul} bind def
+/hex_width  { 2 hex_side mul } bind def
+/hex_color  {0.5 0.5 0.5} def
+/hex_linewidth 1 def
+
+/rows 10 def
+/cols 10 def
+/lowfirstcol 0 def
+
+/center_size 3 def
+/center_color {0.5 0.5 0.5} def
+
+/coord_font /Courier def
+/coord_size 8 def
+/coord_digits 2 def
+/coord_color {0.5 0.5 0.5} def
+/coord_cskip 1 def
+/coord_rskip 1 def
+/coord_cstart 1 def
+/coord_rstart 1 def
+/coord_cstart_right 0 def
+/coord_rstart_top 1 def
+/coord_bearing 0 def
+/coord_distance 0 def
+/coord_tilt 0 def
+
+%
+% Definitions
+%
+/line {hex_side 0 rlineto} def
+/no_line {hex_side 0 rmoveto} def
+
+%
+%             1
+%          ________
+%         /        \  
+%     0  /          \ 2
+%       /            \________
+%                        3
+%
+
+/side
+{
+   dup 0 eq {
+      % 0
+      60 rotate
+      line
+      -60 rotate 
+   } {
+      dup 1 eq {
+         % 1
+         line
+      } {
+         dup 2 eq {
+            % 2
+            -60 rotate
+            line
+            60 rotate
+         } {
+            % 3
+            line
+         } ifelse
+      } ifelse
+   } ifelse 
+
+   pop
+} bind def
+
+/side_skip
+{
+   dup 0 eq {
+      % 0
+      60 rotate
+      line
+      -60 rotate
+   } {
+      dup 1 eq {
+         % 1
+         no_line
+      } {
+         dup 2 eq {
+            % 2
+            -60 rotate
+            line
+            60 rotate
+         } {
+            % 3
+            no_line
+         } ifelse
+      } ifelse
+   } ifelse 
+
+   pop
+} bind def
+
+/edge
+{
+   0 eq {
+      % 0
+      -60 rotate
+      line
+   } {
+      % 1
+      60 rotate
+      line
+   } ifelse
+} bind def
+
+%%EndProlog
+%%Page: 1 1
+
+newpath
+
+%
+% draw the hex grid
+%
+hex_color setrgbcolor
+hex_linewidth setlinewidth
+
+mleft mbottom moveto
+
+lowfirstcol 0 eq {
+   60 rotate
+   no_line
+   -60 rotate
+
+   1 1 2 cols mul cols 2 mod sub { 4 mod side } for
+
+   1 cols 2 mod add 60 mul rotate
+   1 cols 2 mod sub 1 2 rows mul 1 sub cols 2 mod sub { 2 mod edge } for
+
+   1 cols 2 mod add 60 mul rotate
+   cols 2 mod 1 add 1 2 cols mul 2 cols 2 mod mul add { 4 mod side } for
+
+   60 rotate 
+   1 1 2 rows mul 1 sub { 2 mod edge } for
+   closepath
+
+   60 rotate
+   rows 1 sub {
+      currentpoint
+
+      3 1 2 cols mul 1 add { 4 mod side_skip } for
+      moveto
+
+      0 hex_height rmoveto
+      currentpoint
+
+      1 1 2 cols mul 1 sub { 4 mod side } for
+      moveto
+   } repeat
+
+   3 1 2 cols mul 1 add { 4 mod side_skip } for
+} {
+   0 0.5 hex_height mul rmoveto
+
+   2 1 2 cols mul 2 add cols 1 add 2 mod sub { 4 mod side } for
+
+   1 cols 1 add 2 mod add 60 mul rotate
+   cols 2 mod 1 2 rows mul 1 sub cols 1 add 2 mod sub { 2 mod edge } for
+
+   1 cols 1 add 2 mod add 60 mul rotate
+   2 cols 2 mod sub 1 2 cols mul 1 add 2 cols 2 mod mul sub { 4 mod side } for
+
+   120 rotate
+   0 1 2 rows mul 2 sub { 2 mod edge } for
+   closepath
+
+   120 rotate
+   0.25 hex_width mul 0.5 hex_height mul rmoveto
+   rows 1 sub {
+      currentpoint
+      currentpoint
+      1 1 2 cols mul 2 sub { 4 mod side_skip } for
+      moveto
+
+      3 1 2 cols mul 1 add { 4 mod side } for
+      moveto
+
+      0 hex_height rmoveto
+   } repeat
+
+   1 1 2 cols mul 2 sub { 4 mod side_skip } for
+} ifelse
+
+stroke
+
+%
+% draw the centers
+%
+center_color setrgbcolor
+
+mleft mbottom moveto
+
+hex_width 2 div 2 lowfirstcol sub 0.5 hex_height mul mul rmoveto
+
+lowfirstcol 1 eq { -1 } { 1 } ifelse
+
+cols {
+   currentpoint
+   rows {
+      currentpoint
+      currentpoint center_size 0 360 arc
+      fill
+      moveto
+      0 hex_height rmoveto
+   } repeat
+   moveto
+
+   neg
+   dup
+
+   0.5 hex_height mul mul
+   0.75 hex_width mul
+   exch
+
+   rmoveto
+} repeat 
+
+
+stroke
+
+showpage
+
+%%Trailer
+cleartomark countdictstack exch sub { end } repeat restore
+%%EOF
+

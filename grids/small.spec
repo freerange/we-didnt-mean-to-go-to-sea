@@ -1,0 +1,10 @@
+image-margin = 20mm 
+image-height = 297mm
+image-width = 210mm
+rows = 20
+columns = 20
+coord-format = ""
+grid-grain = v
+output = ps
+center-style = d
+outfile = small.ps
