@@ -157,6 +157,10 @@ class State
   def draw_on_map(map)
     map.draw_boat_at(@x, @y)
   end
+
+  def to_json(*args)
+    {'x' => @x, 'y' => @y}.to_json
+  end
 end
 
 class TextResponder
