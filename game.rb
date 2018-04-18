@@ -27,7 +27,7 @@ class Feature
 
   def volume_from(x, y)
     distance = distance_from(x, y) + 1 
-    @volume / (distance * distance)
+   @volume / (distance * distance)
   end
 end
 
@@ -62,6 +62,41 @@ class Map
       end
     end
     features
+  end
+
+  def height
+    @tiles.length
+  end
+
+  def width
+    @tiles.first.length
+  end
+
+  def port
+    @features.find {|f|
+      f.name == "Port"
+    }
+  end
+
+  def tile_category(x,y)
+    case @tiles[(height-1)-y][x]
+    when "P"
+      :in_port
+    when "C", "L", "H"
+      :aground
+    when "~", "B"
+      :at_sea
+    else
+      :in_proper_trouble
+    end
+  end
+
+  def get_start_position
+    candidate_position = [0,0]
+    begin 
+      candidate_position = [rand(width), rand(height)]
+    end while tile_category(candidate_position[0], candidate_position[1]) != :at_sea 
+    return candidate_position
   end
 
   def draw_boat_at(bx, by)
@@ -171,8 +206,9 @@ if __FILE__ == $0
 
   map = Map.new(MAP)
   game = Game.new(map, TextResponder.new)
+  start_x, start_y = map.get_start_position
 
-  state = State.new(Random.rand(5)+3, Random.rand(5)+3)
+  state = State.new(start_x, start_y)
   while true do
     print "> "
     command = gets.chomp
