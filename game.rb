@@ -37,23 +37,43 @@ class Map
     @features = parse_features
   end
 
-  def parse_features
-    features = []
+  def each_tile
     height = @tiles.length
     @tiles.map.with_index do |tile_row, y|
       tile_row.chars.map.with_index do |tile_col, x|
-        feature_map = {
-          "B" => ["Buoy", 0.5],
-          "C" => ["Coastline", 0.5],
-          "H" => ["Lighthouse", 1.0]
-        }
-        if fv  = feature_map[tile_col]
-          feature, volume = fv
-          features << Feature.new(feature, x, (height - 1) - y, volume)
-        end
+        yield [tile_col, x, (height - 1) - y]
+      end
+    end
+  end
+
+  def parse_features
+    features = []
+    each_tile do |tile, x, y|
+      feature_map = {
+        "B" => ["Buoy", 0.5],
+        "C" => ["Coastline", 0.5],
+        "H" => ["Lighthouse", 1.0]
+      }
+      if fv  = feature_map[tile]
+        feature, volume = fv
+        features << Feature.new(feature, x, y, volume)
       end
     end
     features
+  end
+
+  def draw_boat_at(bx, by)
+    each_tile do |tile, x, y|
+     if x == 0 
+       puts
+     end
+     if bx == x && by == y
+       print "^"
+     else
+       print tile
+     end
+    end
+    puts
   end
 
   def features_audible_from(x, y)
@@ -81,6 +101,10 @@ class State
 
   def audible_features(map)
     map.features_audible_from(@x, @y)
+  end
+
+  def draw_on_map(map)
+    map.draw_boat_at(@x, @y)
   end
 end
 
@@ -134,6 +158,8 @@ class Game
       @responder.success(state.move(1, 0)) 
     when :listen
       @responder.listen(state.audible_features(@map), state)
+    when :noop
+      @responder.success(state)
     end
   end
 
@@ -159,6 +185,9 @@ if __FILE__ == $0
       game.step(state, :go_west)
     when "listen"
       game.step(state, :listen)
+    when "cheat"
+      state.draw_on_map(map)
+      game.step(state, :noop)
     else
       ["Huh?", state ]
     end
