@@ -56,8 +56,8 @@ class Map
     features
   end
 
-  def features_audible_from(x, y, threshold = 0)
-    @features.map {|f| [f, f.volume_from(x, y)] }.select {|(_,fv)| fv > threshold }.shuffle 
+  def features_audible_from(x, y)
+    @features.map {|f| [f, f.volume_from(x, y)] }
   end
 end
 
@@ -92,7 +92,11 @@ class TextResponder
   end
 
   def listen(features_and_volume, state)
-    response = "You can hear: "+features_and_volume.map {|(f,fv)| f.name + " (" + adverb(fv) + ")" }.join(",")
+    above_hearing_threshold = features_and_volume.select {|(_, fv)| fv >0.05 }
+    response = "You can hear: "+
+      above_hearing_threshold.map do |(f,fv)|
+        f.name + " (" + adverb(fv) + ")" 
+      end.join(",")
     [response, state]
   end
     
