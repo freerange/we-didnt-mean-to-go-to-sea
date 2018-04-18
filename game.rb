@@ -20,9 +20,7 @@ class Feature
   end
 
   def distance_from(x, y)
-    xdiff = (x - @x).abs
-    ydiff = (y - @y).abs
-    Math.sqrt(xdiff * xdiff + ydiff * ydiff)
+    Math.hypot(x - @x, y - @y)
   end
 
   def volume_from(x, y)
