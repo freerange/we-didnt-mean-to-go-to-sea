@@ -1,13 +1,13 @@
-MAP = ["LLLLLLLCSS",
-      "LLLLLLLCSS",
-      "LLLCLLLCSS",
-      "LLCSCHCSSS",
-      "LLCSBSSSBS",
-      "LLPSSSSSSS",
-      "LCSSSSSSSS",
-      "LCSSSSSSCC",
-      "CCSBSSCCLC",
-      "SSSSSBSCCS"]
+MAP = ["LLLLLLLC~~",
+      "LLLLLLLC~~",
+      "LLLCLLLC~~",
+      "LLC~CHC~~~",
+      "LLC~B~~~B~",
+      "LLP~~~~~~~",
+      "LC~~~~~~~~",
+      "LC~~~~~~CC",
+      "CC~B~~CCLC",
+      "~~~~~B~CC~"]
 
 
 class Feature
