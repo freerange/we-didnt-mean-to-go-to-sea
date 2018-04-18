@@ -50,13 +50,15 @@ class Map
     features = []
     each_tile do |tile, x, y|
       feature_map = {
-        "B" => ["Buoy", 0.5],
-        "C" => ["Coastline", 0.5],
-        "H" => ["Lighthouse", 1.0]
+        "B" => [["Buoy", 0.5]],
+        "C" => [["Coastline", 0.5]],
+        "P" => [["Coastline", 0.5],["Port", 0.4]],
+        "H" => [["Lighthouse", 1.0],["Coastline", 0.5]]
       }
-      if fv  = feature_map[tile]
-        feature, volume = fv
-        features << Feature.new(feature, x, y, volume)
+      if fvs  = feature_map[tile]
+        fvs.each do |(feature, volume)|
+          features << Feature.new(feature, x, y, volume)
+        end
       end
     end
     features
