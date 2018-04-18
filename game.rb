@@ -150,6 +150,10 @@ class State
     map.features_audible_from(@x, @y)
   end
 
+  def status(map)
+    map.tile_category(@x, @y)
+  end
+
   def draw_on_map(map)
     map.draw_boat_at(@x, @y)
   end
@@ -210,6 +214,9 @@ class Game
     end
   end
 
+  def status(state)
+    state.status(@map)
+  end
 end
 
 if __FILE__ == $0
@@ -239,9 +246,14 @@ if __FILE__ == $0
     else
       ["Huh?", state ]
     end
-    if state.same_position?(2,5)
-      print "You're home"
+
+    case game.status(state)
+    when :in_port
+      puts "You're home!!"
       exit 0
+    when :aground
+      puts "You crashed!!"
+      exit 1
     end
     puts ack
   end
