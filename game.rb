@@ -38,10 +38,9 @@ class Map
   end
 
   def each_tile
-    height = @tiles.length
     @tiles.map.with_index do |tile_row, y|
       tile_row.chars.map.with_index do |tile_col, x|
-        yield [tile_col, x, (height - 1) - y]
+        yield [tile_col, x, flip(y)]
       end
     end
   end
@@ -78,8 +77,12 @@ class Map
     }
   end
 
+  def flip(y)
+    (height - 1) - y
+  end
+  
   def tile_category(x,y)
-    case @tiles[(height-1)-y][x]
+    case @tiles[flip(y)][x]
     when "P"
       :in_port
     when "C", "L", "H"
@@ -91,12 +94,19 @@ class Map
     end
   end
 
+  def valid_start_position?(x,y)
+    tile_category(x, y) == :at_sea &&
+    port.distance_from(x, y) > 3
+  end
+
   def get_start_position
-    candidate_position = [0,0]
+    candidate_x = 0
+    candidate_y = 0
     begin 
-      candidate_position = [rand(width), rand(height)]
-    end while tile_category(candidate_position[0], candidate_position[1]) != :at_sea 
-    return candidate_position
+      candidate_x = rand(width)
+      candidate_y = rand(height)
+    end while !valid_start_position?(candidate_x, candidate_y)
+    [candidate_x, candidate_y]
   end
 
   def draw_boat_at(bx, by)
