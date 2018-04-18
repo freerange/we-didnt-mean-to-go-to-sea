@@ -18,7 +18,7 @@ class Feature
     @y = y
     @volume = volume
   end
-  
+
   def distance_from(x, y)
     xdiff = (x - @x).abs
     ydiff = (y - @y).abs
@@ -26,8 +26,8 @@ class Feature
   end
 
   def volume_from(x, y)
-    distance = distance_from(x, y) + 1 
-   @volume / (distance * distance)
+    distance = distance_from(x, y) + 1
+    @volume / (distance * distance)
   end
 end
 
@@ -80,7 +80,7 @@ class Map
   def flip(y)
     (height - 1) - y
   end
-  
+
   def tile_category(x,y)
     case @tiles[flip(y)][x]
     when "P"
@@ -102,7 +102,7 @@ class Map
   def get_start_position
     candidate_x = 0
     candidate_y = 0
-    begin 
+    begin
       candidate_x = rand(width)
       candidate_y = rand(height)
     end while !valid_start_position?(candidate_x, candidate_y)
@@ -111,7 +111,7 @@ class Map
 
   def draw_boat_at(bx, by)
     each_tile do |tile, x, y|
-     if x == 0 
+     if x == 0
        puts
      end
      if bx == x && by == y
@@ -143,7 +143,7 @@ class State
   end
 
   def ==(another_state)
-    another_state.same_position?(@x, @y) 
+    another_state.same_position?(@x, @y)
   end
 
   def audible_features(map)
@@ -170,18 +170,18 @@ class TextResponder
     above_hearing_threshold = features_and_volume.select {|(_, fv)| fv >0.05 }
     response = "You can hear: "+
       above_hearing_threshold.map do |(f,fv)|
-        f.name + " (" + adverb(fv) + ")" 
+        f.name + " (" + adverb(fv) + ")"
       end.join(",")
     [response, state]
   end
-    
+
   def adverb(volume)
     case volume
     when 1
       "ear-splittingly loud"
-    when 0.5..1 
+    when 0.5..1
       "very loudly"
-    when 0.25...0.5 
+    when 0.25...0.5
       "loudly"
     when 0.11...0.25
       "in the distance"
@@ -196,17 +196,17 @@ class Game
     @map = map
     @responder = responder
   end
-  
+
   def step(state, action)
     case action
     when :go_north
-      @responder.success(state.move(0, 1)) 
+      @responder.success(state.move(0, 1))
     when :go_south
-      @responder.success(state.move(0, -1)) 
+      @responder.success(state.move(0, -1))
     when :go_west
-      @responder.success(state.move(-1, 0)) 
+      @responder.success(state.move(-1, 0))
     when :go_east
-      @responder.success(state.move(1, 0)) 
+      @responder.success(state.move(1, 0))
     when :listen
       @responder.listen(state.audible_features(@map), state)
     when :noop
@@ -258,4 +258,3 @@ if __FILE__ == $0
     puts ack
   end
 end
-
