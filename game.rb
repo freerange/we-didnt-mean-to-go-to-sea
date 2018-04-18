@@ -1,3 +1,15 @@
+MAP = ["LLLLLLLCSS",
+      "LLLLLLLCSS",
+      "LLLCLLLCSS",
+      "LLCSCHCSSS",
+      "LLCSBSSSBS",
+      "LLPSSSSSSS",
+      "LCSSSSSSSS",
+      "LCSSSSSSCC",
+      "CCSBSSCCLC",
+      "SSSSSBSCCS"]
+
+
 class Feature
   attr_reader :name
   def initialize(name, x, y, volume)
@@ -20,8 +32,28 @@ class Feature
 end
 
 class Map
-  def initialize(features)
-    @features = features
+  def initialize(tiles)
+    @tiles = tiles
+    @features = parse_features
+  end
+
+  def parse_features
+    features = []
+    height = @tiles.length
+    @tiles.map.with_index do |tile_row, y|
+      tile_row.chars.map.with_index do |tile_col, x|
+        feature_map = {
+          "B" => ["Buoy", 0.5],
+          "C" => ["Coastline", 0.5],
+          "H" => ["Lighthouse", 1.0]
+        }
+        if fv  = feature_map[tile_col]
+          feature, volume = fv
+          features << Feature.new(feature, x, (height - 1) - y, volume)
+        end
+      end
+    end
+    features
   end
 
   def features_audible_from(x, y, threshold = 0)
@@ -105,7 +137,7 @@ end
 
 if __FILE__ == $0
 
-  map = Map.new(features)
+  map = Map.new(MAP)
   game = Game.new(map, TextResponder.new)
 
   state = State.new(Random.rand(5)+3, Random.rand(5)+3)
