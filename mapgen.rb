@@ -14,9 +14,37 @@ MAP = ['LLLLLLLC~~',
 map_width = MAP.first.length
 map_height = MAP.length
 
-width = 1000
-height = 1000
+width = 500
+height = 500
 number_of_points = 1000
+
+Point = Struct.new(:x, :y, :annotations) do
+  def initialize(x:, y:, annotations: {})
+    super(x, y, annotations)
+  end
+
+  def distance_to(point) 
+    Math.hypot(point.x - x, point.y - y)
+  end
+end
+
+Edge = Struct.new(:v1, :v2, :annotations) do
+  def initialize(v1:, v2:, annotations: {})
+    super(v1, v2, annotations)
+  end
+
+  def midpoint
+    midpoint_x = (v1.x + v2.x) / 2.0
+    midpoint_y = (v2.y + v1.y) / 2.0
+    Point.new(x: midpoint_x, y: midpoint_y)
+  end
+end
+
+Polygon = Struct.new(:edges, :center, :annotations) do
+  def initialize(edges:, center:, annotations: {})
+    super(edges, center, annotations)
+  end
+end
 
 random_points = number_of_points.times.map do |_i|
   x = rand(width)
@@ -25,6 +53,44 @@ random_points = number_of_points.times.map do |_i|
 end
 
 comp = RubyVor::VDDT::Computation.from_points(random_points)
+
+
+def vertex_in_map(v, width, height)
+  v.x >= 0 && v.x <= width && v.y >= 0 && v.y <= height
+end
+
+
+vertices = comp.voronoi_diagram_raw
+               .select { |(type, _, _)| type == :v }
+               .map { |(_, x, y)| Point.new(x: x, y: y) }
+
+edges = comp.voronoi_diagram_raw
+            .select { |(type, _, _, _)| type == :e }
+            .map { |(_, _, v1, v2)| [v1, v2] }
+            .select { |(v1, v2)| v1 != -1 && v2 != -1 }
+            .map { |(v1, v2)| Edge.new(v1: vertices[v1], v2: vertices[v2]) }
+            .select { |e| vertex_in_map(e.v1, width, height) && vertex_in_map(e.v2, width, height) }
+
+points = comp.points.map { |i| Point.new(x: i.x, y: i.y) }
+
+edges_with_pindexes = edges.map do |e|
+  nearest_points = points.each_with_index.sort_by do |(point, _)|
+    e.midpoint.distance_to(point) 
+  end
+  nearest_points = nearest_points[0..1]
+  [e, nearest_points]
+end
+
+polygons = Hash.new
+edges_with_pindexes.each do |(e, nearest_points)|
+  nearest_points.each do |(point, idx)|
+    if !polygons[idx]
+      polygons[idx] = Polygon.new(edges: [], center: point)
+    end
+    polygons[idx].edges << e
+  end
+end
+polygons = polygons.values
 
 def type_of_map_point(x, y, width, height, map_width, map_height)
   map_x = x / (width / map_width)
@@ -42,43 +108,17 @@ def type_of_map_point(x, y, width, height, map_width, map_height)
   end
 end
 
-def vertex_in_map(vertex, width, height)
-  x, y = vertex
-  x >= 0 && x <= width && y >= 0 && y <= height
-end
-
-
-vertices = comp.voronoi_diagram_raw
-               .select { |(type, _, _)| type == :v }
-               .map { |(_, x, y)| [x, y] }
-
-edges = comp.voronoi_diagram_raw
-            .select { |(type, _, _, _)| type == :e }
-            .map { |(_, _, v1, v2)| [v1, v2] }
-            .select { |(v1, v2)| v1 != -1 && v2 != -1 }
-            .map { |(v1, v2)| [vertices[v1], vertices[v2]] }
-            .select { |(v1, v2)| vertex_in_map(v1, width, height) && vertex_in_map(v2, width, height) }
-
-points = comp.points.map { |i| i }
-
-edges_with_pindexes = edges.map do |(v1, v2)|
-  v1x, v1y = v1
-  v2x, v2y = v2
-  midpoint_x = (v1x + v2x) / 2.0
-  midpoint_y = (v2y + v1y) / 2.0
-  nearest_points = points.each_with_index.sort_by do |(point, _)|
-    Math.hypot(point.x - midpoint_x, point.y - midpoint_y)
-  end
-  nearest_points = nearest_points[0..1].map { |(_, index)| index }
-  [v1, v2, nearest_points]
-end
-
-polygons = Hash.new { |h, k| h[k] = [] }
-edges_with_pindexes.each do |(v1, v2, nearest_points)|
-  nearest_points.each do |idx|
-    polygons[idx] << [v1, v2]
+polygons.each do |p|
+  type = type_of_map_point(p.center.x, p.center.y, width, height, map_width, map_height)
+  p.annotations[:tile_type] = type
+  p.edges.each do |e|
+    if !e.annotations[:tile_types]
+      e.annotations[:tile_types] = []
+    end
+    e.annotations[:tile_types] = (e.annotations[:tile_types] + [type]).uniq.sort
   end
 end
+
 
 require 'chunky_png'
 colors = {
@@ -89,32 +129,19 @@ colors = {
   coastlineline: ChunkyPNG::Color('white')
 }
 
-edge_types = edges_with_pindexes.map do |(v1, v2, ps)|
-  ps = ps.map do |idx|
-    center = points[idx]
-    type_of_map_point(center.x, center.y, width, height, map_width, map_height)
-  end.sort
-  [v1, v2, ps]
-end
-
 png = ChunkyPNG::Image.new(width, height)
-polygons.each_pair do |idx, ex|
-  center = points[idx]
-  type = type_of_map_point(center.x, center.y, width, height, map_width, map_height)
-  color = colors[type]
-  ex.each do |(v1, v2)|
-    e1_x, e1_y = v1
-    e2_x, e2_y = v2
-    triangle = [[e1_x, e1_y], [e2_x, e2_y], [center.x, center.y], [e1_x, e1_y]]
+polygons.each do |p|
+  color = colors[p.annotations[:tile_type]]
+  p.edges.each do |e|
+    triangle = [[e.v1.x, e.v1.y], [e.v2.x, e.v2.y], [p.center.x, p.center.y], [e.v1.x, e.v1.y]]
     png.polygon(triangle, color, color)
   end
 end
 
-edge_types.each do |(v1, v2, types)|
-  e1_x, e1_y = v1
-  e2_x, e2_y = v2
+edges.each do |e|
+  types = e.annotations[:tile_types]
   if types == %i[coastline sea]
-    png.line(e1_x.to_i, e1_y.to_i, e2_x.to_i, e2_y.to_i, colors[:coastlineline])
+    png.line(e.v1.x.to_i, e.v1.y.to_i, e.v2.x.to_i, e.v2.y.to_i, colors[:coastlineline])
   end
 end
 
