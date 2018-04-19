@@ -14,8 +14,8 @@ MAP = ['LLLLLLLC~~',
 map_width = MAP.first.length
 map_height = MAP.length
 
-width = 500
-height = 500
+width = 1000
+height = 1000
 number_of_points = 1000
 
 Point = Struct.new(:x, :y, :annotations) do
@@ -54,12 +54,6 @@ end
 
 comp = RubyVor::VDDT::Computation.from_points(random_points)
 
-
-def vertex_in_map(v, width, height)
-  v.x >= 0 && v.x <= width && v.y >= 0 && v.y <= height
-end
-
-
 vertices = comp.voronoi_diagram_raw
                .select { |(type, _, _)| type == :v }
                .map { |(_, x, y)| Point.new(x: x, y: y) }
@@ -69,7 +63,6 @@ edges = comp.voronoi_diagram_raw
             .map { |(_, _, v1, v2)| [v1, v2] }
             .select { |(v1, v2)| v1 != -1 && v2 != -1 }
             .map { |(v1, v2)| Edge.new(v1: vertices[v1], v2: vertices[v2]) }
-            .select { |e| vertex_in_map(e.v1, width, height) && vertex_in_map(e.v2, width, height) }
 
 points = comp.points.map { |i| Point.new(x: i.x, y: i.y) }
 
@@ -129,7 +122,7 @@ colors = {
   coastlineline: ChunkyPNG::Color('white')
 }
 
-png = ChunkyPNG::Image.new(width, height)
+png = ChunkyPNG::Image.new(width, height, colors[:sea])
 polygons.each do |p|
   color = colors[p.annotations[:tile_type]]
   p.edges.each do |e|
