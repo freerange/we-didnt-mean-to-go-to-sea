@@ -201,6 +201,8 @@ each_triangle_with_tile_type(voronoi.polygons) do |type, triangle, pheight|
   graphics.polygon(triangle, color, color)
 end
 
+graphics.blur
+
 each_coastline_edge(voronoi.edges) do |(x1,y1),(x2,y2)|
   graphics.line(x1.to_i, y1.to_i, x2.to_i, y2.to_i, colors[:coastlineline])
 end

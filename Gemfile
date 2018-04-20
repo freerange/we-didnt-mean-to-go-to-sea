@@ -7,3 +7,4 @@ gem 'rack-test'
 
 gem 'rubyvor'
 gem 'chunky_png'
+gem 'rmagick'

@@ -11,6 +11,7 @@ GEM
       rack
     rack-test (1.0.0)
       rack (>= 1.0, < 3)
+    rmagick (2.16.0)
     rubyvor (0.1.4)
       GeoRuby (>= 1.3.0)
       libxml-ruby (>= 0.9.9)
@@ -29,6 +30,7 @@ PLATFORMS
 DEPENDENCIES
   chunky_png
   rack-test
+  rmagick
   rubyvor
   sinatra
   test-unit
