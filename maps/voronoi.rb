@@ -10,9 +10,9 @@ Point = Struct.new(:x, :y, :annotations) do
   end
 end
 
-Edge = Struct.new(:v1, :v2, :annotations) do
-  def initialize(v1:, v2:, annotations: {})
-    super(v1, v2, annotations)
+Edge = Struct.new(:v1, :v2, :annotations, :polygons) do
+  def initialize(v1:, v2:, annotations: {}, polygons: [])
+    super(v1, v2, annotations, polygons)
   end
 
   def midpoint
@@ -33,8 +33,8 @@ class Voronoi
 
   def initialize(number_of_points, width, height)
     random_points = number_of_points.times.map do |_i|
-      x = rand(width)
-      y = rand(height)
+      x = rand(width.to_f)
+      y = rand(height.to_f)
       RubyVor::Point.new(x, y)
     end
     comp = RubyVor::VDDT::Computation.from_points(random_points)
@@ -69,6 +69,7 @@ class Voronoi
           polygons[idx] = Polygon.new(edges: [], center: point)
         end
         polygons[idx].edges << e
+        e.polygons << polygons[idx]
       end
     end
     @polygons = polygons.values
