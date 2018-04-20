@@ -70,14 +70,14 @@ def each_coastline_edge(edges)
   end
 end
 
-def each_grid_center(width, height, map_width, map_height)
+def each_grid_center(map, width, height, map_width, map_height)
   cell_width = width / map_width.to_f
   cell_height = height / map_height.to_f
-  width.times do |x|
-    height.times do |y|
+  map_width.times do |x|
+    map_height.times do |y|
       rx = x * cell_width + cell_width / 2.0
       ry = y * cell_height + cell_height / 2.0
-      yield rx.to_i, ry.to_i
+      yield rx.to_i, ry.to_i if ["~","B"].include? map[y][x]
     end
   end
 end
@@ -93,37 +93,39 @@ end
 map_width = MAP.first.length
 map_height = MAP.length
 
-width = 300
-height = 300
-number_of_points = 400
+
+cell_width = width / map_width.to_f
+
+grid_marker_size = width / 250
 
 voronoi = Voronoi.new(number_of_points, width, height)
+
 annotate_polygons_with_tile_types(voronoi.polygons, width, height, map_width, map_height)
 annotate_polygons_with_neighbourhood(voronoi.polygons)
 stretch_coastline(voronoi.polygons)
 
-require 'chunky_png'
 colors = {
-  land: ChunkyPNG::Color('green'),
-  sea: ChunkyPNG::Color('blue'),
-  coastline: ChunkyPNG::Color('grey'),
-  unknown: ChunkyPNG::Color('pink'),
-  coastlineline: ChunkyPNG::Color('white')
+  land: 'green',
+  sea: 'light blue',
+  coastline: 'grey',
+  unknown: 'pink',
+  coastlineline: 'white'
 }
 
-png = ChunkyPNG::Image.new(width, height, colors[:sea])
+require_relative './chunky_graphics'
+graphics = ChunkyGraphics.new(width, height, colors[:sea])
 
 each_triangle_with_tile_type(voronoi.polygons) do |type, triangle|
   color = colors[type]
-  png.polygon(triangle, color, color)
+  graphics.polygon(triangle, color, color)
 end
 
 each_coastline_edge(voronoi.edges) do |(x1,y1),(x2,y2)|
-  png.line(x1.to_i, y1.to_i, x2.to_i, y2.to_i, colors[:coastlineline])
+  graphics.line(x1.to_i, y1.to_i, x2.to_i, y2.to_i, colors[:coastlineline])
 end
 
-each_grid_center(width, height, map_width, map_height) do |rx,ry|
-  png.rect(rx, ry, rx + 2, ry + 2, colors[:coastline], colors[:coastline])
+each_grid_center(MAP, width, height, map_width, map_height) do |rx,ry|
+  graphics.rect(rx, ry, rx + grid_marker_size, ry + grid_marker_size, colors[:coastline])
 end
 
-png.save('map.png', interlace: true)
+graphics.save("map#{number_of_points_per_grid_square}-#{width}x#{height}")
