@@ -41,7 +41,17 @@ class ChunkyGraphics
   end
 
   def line(x1, y1, x2, y2, color)
-    @png.line(x1.to_i, y1.to_i, x2.to_i, y2.to_i, color_for(color))
+    with_image_magick do |image|
+      imgl = Magick::ImageList.new
+      imgl << image
+      draw = Magick::Draw.new
+      path = "M #{x1} #{y1} T #{x2} #{y2}"
+      draw.stroke(color)
+      draw.stroke_width(3.0)
+      draw.path(path)
+      draw.draw(imgl)
+      imgl.flatten_images
+    end
   end
 
   def rect(x1, y1, x2, y2, color)
