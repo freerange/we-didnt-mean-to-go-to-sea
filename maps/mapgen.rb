@@ -183,7 +183,7 @@ stretch_coastline(voronoi.polygons)
 
 colors = {
   land: 'green',
-  land_high: 'yellowgreen',
+  land_high: 'darkgreen',
   sea: 'light blue',
   coastline: 'grey',
   unknown: 'pink',
@@ -196,7 +196,7 @@ graphics = ChunkyGraphics.new(width, height, colors[:sea])
 each_triangle_with_tile_type(voronoi.polygons) do |type, triangle, pheight|
   color = colors[type]
   if type == :land
-    color = graphics.blend(colors[:land_high], colors[:land], pheight)
+    color = graphics.blend(colors[:land_high], colors[:land], pheight**2)
   end
   graphics.polygon(triangle, color, color)
 end
