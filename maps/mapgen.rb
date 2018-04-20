@@ -11,6 +11,39 @@ MAP = ['LLLLLLLC~~',
        'CC~B~~CCLC',
        '~~~~~B~CC~']
 
+def is_land_tile?(tile)
+  ["L","H","P"].include? tile
+end
+
+def build_height_map(map)
+  top_bottom = ['X' * (map.first.length + 2)]
+  bordered_map = top_bottom +
+    map.map {|row| ('X' + row + 'X').chars } +
+    top_bottom
+  heights = Array.new(map.length){Array.new(map.first.length,0.1)}
+  map.length.times do |y|
+    map.first.length.times do |x|
+      border_x = x + 1
+      border_y = y + 1
+      next unless is_land_tile?(bordered_map[border_y][border_x]) 
+      neighbours = [
+        bordered_map[border_x+1][border_y+1],
+        bordered_map[border_x+0][border_y+1],
+        bordered_map[border_x-1][border_y+1],
+        bordered_map[border_x+1][border_y+0],
+        bordered_map[border_x+0][border_y+0],
+        bordered_map[border_x-1][border_y+0],
+        bordered_map[border_x+1][border_y-1],
+        bordered_map[border_x+0][border_y-1],
+        bordered_map[border_x-1][border_y-1],
+      ].reject {|t| t == "X" }  
+      height = neighbours.select {|t| is_land_tile?(t) }.length  / neighbours.length.to_f
+      heights[y][x] = height  
+    end
+  end
+  heights
+end
+
 def type_of_map_point(x, y, width, height, map_width, map_height)
   map_x = x / (width / map_width)
   map_y = y / (height / map_height)
@@ -40,11 +73,12 @@ def annotate_polygons_with_tile_types(polygons, width, height, map_width, map_he
   end
 end
 
-def annotate_polygons_with_neighbourhood(polygons)
+def annotate_polygons_with_neighbourhood(polygons, edge_to_polygons)
   polygons.each do |p|
     p.annotations[:neighbourhood] = [p.annotations[:tile_type]] 
     p.edges.each do |e|
-      neighbours = e.polygons.reject {|poly| poly == p }.map { |poly| poly.annotations[:tile_type] }
+      edge_polygons = edge_to_polygons[e]
+      neighbours = edge_polygons.reject {|poly| poly == p }.map { |poly| poly.annotations[:tile_type] }
       p.annotations[:neighbourhood] = p.annotations[:neighbourhood] + neighbours
     end
     p.annotations[:neighbourhood] = p.annotations[:neighbourhood].uniq.sort
@@ -54,9 +88,10 @@ end
 def each_triangle_with_tile_type(polygons)
   polygons.each do |p|
     type = p.annotations[:tile_type]
+    pheight = p.annotations[:height]
     p.edges.each do |e|
       triangle = [[e.v1.x, e.v1.y], [e.v2.x, e.v2.y], [p.center.x, p.center.y]]
-      yield type, triangle
+      yield type, triangle, pheight 
     end
   end
 end
@@ -108,6 +143,20 @@ def stretch_coastline(polygons)
   end
 end
 
+def annotate_polygons_with_height(polygons, map, width, height, map_width, map_height)
+  height_map = build_height_map(map) 
+  polygons.each do |poly|
+    grid_x = poly.center.x / (width / map_width)
+    grid_y = poly.center.y / (height / map_height)
+    if grid_x < map_width && grid_y < map_height
+      tile_height = height_map[grid_y.to_i][grid_x.to_i]
+      poly.annotations[:height] = tile_height * (rand(0.1)+0.95)
+    else
+      poly.annotations[:height] = 0
+    end
+  end
+end
+
 map_width = MAP.first.length
 map_height = MAP.length
 
@@ -128,11 +177,13 @@ grid_marker_size = width / 250
 voronoi = Voronoi.new(number_of_points, width, height)
 
 annotate_polygons_with_tile_types(voronoi.polygons, width, height, map_width, map_height)
-annotate_polygons_with_neighbourhood(voronoi.polygons)
+annotate_polygons_with_neighbourhood(voronoi.polygons, voronoi.edge_to_polygons)
+annotate_polygons_with_height(voronoi.polygons, MAP, width, height, map_width, map_height)
 stretch_coastline(voronoi.polygons)
 
 colors = {
   land: 'green',
+  land_high: 'yellowgreen',
   sea: 'light blue',
   coastline: 'grey',
   unknown: 'pink',
@@ -142,8 +193,11 @@ colors = {
 require_relative './chunky_graphics'
 graphics = ChunkyGraphics.new(width, height, colors[:sea])
 
-each_triangle_with_tile_type(voronoi.polygons) do |type, triangle|
+each_triangle_with_tile_type(voronoi.polygons) do |type, triangle, pheight|
   color = colors[type]
+  if type == :land
+    color = graphics.blend(colors[:land_high], colors[:land], pheight)
+  end
   graphics.polygon(triangle, color, color)
 end
 
