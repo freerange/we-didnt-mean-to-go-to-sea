@@ -111,6 +111,14 @@ end
 map_width = MAP.first.length
 map_height = MAP.length
 
+if ARGV.length != 3
+  $stderr.puts "ruby mapgen.rb voronoi_points_per_square width height"
+  exit 1
+end
+
+number_of_points_per_grid_square, width, height = ARGV.map {|i| i.to_i }
+number_of_points_per_grid_square = ARGV[0].to_i
+number_of_points =  number_of_points_per_grid_square * map_width * map_height 
 
 cell_width = width / map_width.to_f
 
