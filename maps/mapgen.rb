@@ -82,6 +82,14 @@ def each_grid_center(width, height, map_width, map_height)
   end
 end
 
+def stretch_coastline(polygons)
+  polygons.each do |poly|
+    if poly.annotations[:neighbourhood] == [:coastline] || poly.annotations[:neighbourhood] == %i[coastline land]
+      poly.annotations[:tile_type] = :land
+    end
+  end
+end
+
 map_width = MAP.first.length
 map_height = MAP.length
 
@@ -92,6 +100,7 @@ number_of_points = 400
 voronoi = Voronoi.new(number_of_points, width, height)
 annotate_polygons_with_tile_types(voronoi.polygons, width, height, map_width, map_height)
 annotate_polygons_with_neighbourhood(voronoi.polygons)
+stretch_coastline(voronoi.polygons)
 
 require 'chunky_png'
 colors = {
