@@ -8,6 +8,14 @@ Point = Struct.new(:x, :y, :annotations) do
   def distance_to(point) 
     Math.hypot(point.x - x, point.y - y)
   end
+
+  def ==(other)
+    other.x == x && other.y == y
+  end
+
+  def hash
+    x.to_i ^ y.to_i
+  end
 end
 
 Edge = Struct.new(:v1, :v2, :annotations) do
@@ -21,6 +29,13 @@ Edge = Struct.new(:v1, :v2, :annotations) do
     Point.new(x: midpoint_x, y: midpoint_y)
   end
 
+  def hash
+    v1.hash ^ v2.hash
+  end
+
+  def ==(other)
+    v1 == other.v1 && v2 == other.v2 
+  end
 end
 
 Polygon = Struct.new(:edges, :center, :annotations) do
@@ -30,6 +45,14 @@ Polygon = Struct.new(:edges, :center, :annotations) do
 
   def contains_edge?(edge)
     edges.any? {|e| e == edge }
+  end
+
+  def hash
+    edges.hash ^ center.hash 
+  end
+
+  def ==(other)
+    edges == other.edges && center == other.center
   end
 end
 
@@ -76,7 +99,7 @@ class Voronoi
           polygons[idx] = Polygon.new(edges: [], center: point)
         end
         polygons[idx].edges << e
-        @edge_to_polygons[e] == polygons[idx]
+        @edge_to_polygons[e] << polygons[idx]
       end
     end
     @polygons = polygons.values
