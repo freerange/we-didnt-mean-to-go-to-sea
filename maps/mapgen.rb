@@ -182,12 +182,12 @@ annotate_polygons_with_height(voronoi.polygons, MAP, width, height, map_width, m
 stretch_coastline(voronoi.polygons)
 
 colors = {
-  land: 'green',
-  land_high: 'darkgreen',
+  land_high: 'green',
+  land: 'goldenrod',
   sea: 'light blue',
   coastline: 'grey',
   unknown: 'pink',
-  coastlineline: 'white'
+  coastlineline: 'light grey'
 }
 
 require_relative './chunky_graphics'
