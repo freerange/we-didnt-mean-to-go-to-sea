@@ -1,5 +1,6 @@
 require 'chunky_png'
 require 'chunky_png/rmagick'
+require 'RMagick'
 
 class ChunkyGraphics
 
@@ -17,10 +18,17 @@ class ChunkyGraphics
     ChunkyPNG::Color(name)
   end
 
-  def blur
+  def with_image_magick
     image  = ChunkyPNG::RMagick.export(@png)
-    image = image.blur_image(0,8)
+    image = yield image
     @png  = ChunkyPNG::RMagick.import(image)
+  end
+
+  def blur
+    with_image_magick do |image|
+      image = image.blur_image(0,8)
+      image = image.add_noise(Magick::GaussianNoise)
+    end
   end
 
   def blend(color1, color2, factor)
