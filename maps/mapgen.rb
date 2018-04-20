@@ -194,14 +194,23 @@ require_relative './chunky_graphics'
 graphics = ChunkyGraphics.new(width, height, colors[:sea])
 
 each_triangle_with_tile_type(voronoi.polygons) do |type, triangle, pheight|
-  color = colors[type]
-  if type == :land
-    color = graphics.blend(colors[:land_high], colors[:land], pheight**2)
-  end
+  next unless [:land, :coastline].include? type
+  color = case type
+          when :land
+            graphics.blend(colors[:land_high], colors[:land], pheight**2)
+          else
+            colors[:coastline]
+          end
   graphics.polygon(triangle, color, color)
 end
 
 graphics.blur
+
+each_triangle_with_tile_type(voronoi.polygons) do |type, triangle, pheight|
+  next if [:land, :coastline].include? type
+  color = colors[type]
+  graphics.polygon(triangle, color, color)
+end
 
 each_coastline_edge(voronoi.edges) do |(x1,y1),(x2,y2)|
   graphics.line(x1.to_i, y1.to_i, x2.to_i, y2.to_i, colors[:coastlineline])
