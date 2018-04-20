@@ -150,7 +150,7 @@ def annotate_polygons_with_height(polygons, map, width, height, map_width, map_h
     grid_y = poly.center.y / (height / map_height)
     if grid_x < map_width && grid_y < map_height
       tile_height = height_map[grid_y.to_i][grid_x.to_i]
-      poly.annotations[:height] = tile_height * (rand(0.1)+0.95)
+      poly.annotations[:height] = tile_height * 0.9 * (rand(0.2)+0.9)
     else
       poly.annotations[:height] = 0
     end
