@@ -40,6 +40,17 @@ def annotate_polygons_with_tile_types(polygons, width, height, map_width, map_he
   end
 end
 
+def annotate_polygons_with_neighbourhood(polygons)
+  polygons.each do |p|
+    p.annotations[:neighbourhood] = [p.annotations[:tile_type]] 
+    p.edges.each do |e|
+      neighbours = e.polygons.reject {|poly| poly == p }.map { |poly| poly.annotations[:tile_type] }
+      p.annotations[:neighbourhood] = p.annotations[:neighbourhood] + neighbours
+    end
+    p.annotations[:neighbourhood] = p.annotations[:neighbourhood].uniq.sort
+  end
+end
+
 def each_triangle_with_tile_type(polygons)
   polygons.each do |p|
     type = p.annotations[:tile_type]
@@ -80,6 +91,7 @@ number_of_points = 400
 
 voronoi = Voronoi.new(number_of_points, width, height)
 annotate_polygons_with_tile_types(voronoi.polygons, width, height, map_width, map_height)
+annotate_polygons_with_neighbourhood(voronoi.polygons)
 
 require 'chunky_png'
 colors = {
