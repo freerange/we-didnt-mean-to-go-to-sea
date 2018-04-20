@@ -15,6 +15,11 @@ class ChunkyGraphics
     ChunkyPNG::Color(name)
   end
 
+  def blend(color1, color2, factor)
+    factor = (255 * factor).to_i
+    ChunkyPNG::Color.interpolate_quick(ChunkyPNG::Color(color1), ChunkyPNG::Color(color2), factor)
+  end
+
   def polygon(points, stroke, fill)
     @png.polygon(points, color_for(stroke), color_for(fill))
   end
