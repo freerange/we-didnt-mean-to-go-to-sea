@@ -82,6 +82,24 @@ def each_grid_center(map, width, height, map_width, map_height)
   end
 end
 
+def each_icon_to_draw(map, cell_width, icon_size)
+  map.each_with_index do |row, y|
+    row.chars.each.with_index do |col, x|
+      x_pos = cell_width * x + icon_size / 2
+      y_pos = cell_width * y + icon_size / 2
+      image = case col
+        when 'B'
+          :buoy
+        when 'H'
+          :lighthouse
+        when 'P'
+          :port
+      end
+      yield image, x_pos, y_pos if image
+    end
+  end
+end
+
 def stretch_coastline(polygons)
   polygons.each do |poly|
     if poly.annotations[:neighbourhood] == [:coastline] || poly.annotations[:neighbourhood] == %i[coastline land]
@@ -96,6 +114,7 @@ map_height = MAP.length
 
 cell_width = width / map_width.to_f
 
+icon_size = (cell_width / 2).to_i
 grid_marker_size = width / 250
 
 voronoi = Voronoi.new(number_of_points, width, height)
@@ -126,6 +145,10 @@ end
 
 each_grid_center(MAP, width, height, map_width, map_height) do |rx,ry|
   graphics.rect(rx, ry, rx + grid_marker_size, ry + grid_marker_size, colors[:coastline])
+end
+
+each_icon_to_draw(MAP, cell_width, icon_size) do |image, x_pos, y_pos|
+  graphics.icon(image, x_pos, y_pos, icon_size) if image
 end
 
 graphics.save("map#{number_of_points_per_grid_square}-#{width}x#{height}")
