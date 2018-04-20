@@ -224,4 +224,5 @@ each_icon_to_draw(MAP, cell_width, icon_size) do |image, x_pos, y_pos|
   graphics.icon(image, x_pos, y_pos, icon_size) if image
 end
 
-graphics.save("map#{number_of_points_per_grid_square}-#{width}x#{height}")
+filename = "map#{number_of_points_per_grid_square}-#{width}x#{height}-#{Time.now.to_i}"
+graphics.save(filename)
