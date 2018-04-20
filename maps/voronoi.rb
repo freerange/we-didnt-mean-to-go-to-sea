@@ -10,9 +10,9 @@ Point = Struct.new(:x, :y, :annotations) do
   end
 end
 
-Edge = Struct.new(:v1, :v2, :annotations, :polygons) do
-  def initialize(v1:, v2:, annotations: {}, polygons: [])
-    super(v1, v2, annotations, polygons)
+Edge = Struct.new(:v1, :v2, :annotations) do
+  def initialize(v1:, v2:, annotations: {})
+    super(v1, v2, annotations)
   end
 
   def midpoint
@@ -20,16 +20,21 @@ Edge = Struct.new(:v1, :v2, :annotations, :polygons) do
     midpoint_y = (v2.y + v1.y) / 2.0
     Point.new(x: midpoint_x, y: midpoint_y)
   end
+
 end
 
 Polygon = Struct.new(:edges, :center, :annotations) do
   def initialize(edges:, center:, annotations: {})
     super(edges, center, annotations)
   end
+
+  def contains_edge?(edge)
+    edges.any? {|e| e == edge }
+  end
 end
 
 class Voronoi
-  attr_reader :points, :vertices, :edges, :polygons
+  attr_reader :points, :vertices, :edges, :polygons, :edge_to_polygons
 
   def initialize(number_of_points, width, height)
     random_points = number_of_points.times.map do |_i|
@@ -54,6 +59,8 @@ class Voronoi
 
     @points = comp.points.map { |i| Point.new(x: i.x, y: i.y) }
 
+    @edge_to_polygons = Hash.new {|k,v| k[v] = [] } 
+
     edges_with_pindexes = edges.map do |e|
       nearest_points = points.each_with_index.sort_by do |(point, _)|
         e.midpoint.distance_to(point) 
@@ -69,7 +76,7 @@ class Voronoi
           polygons[idx] = Polygon.new(edges: [], center: point)
         end
         polygons[idx].edges << e
-        e.polygons << polygons[idx]
+        @edge_to_polygons[e] == polygons[idx]
       end
     end
     @polygons = polygons.values
