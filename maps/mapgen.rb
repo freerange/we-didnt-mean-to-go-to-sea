@@ -12,7 +12,7 @@ MAP = ['LLLLLLLC~~',
        '~~~~~B~CC~']
 
 def is_land_tile?(tile)
-  ["L","H","P"].include? tile
+  ["L","H","P","C"].include? tile
 end
 
 def build_height_map(map)
@@ -150,7 +150,9 @@ def annotate_polygons_with_height(polygons, map, width, height, map_width, map_h
     grid_y = poly.center.y / (height / map_height)
     if grid_x < map_width && grid_y < map_height
       tile_height = height_map[grid_y.to_i][grid_x.to_i]
-      poly.annotations[:height] = tile_height * 0.9 * (rand(0.2)+0.9)
+      jitter = 0.15
+      power = 2.0 
+      poly.annotations[:height] = (tile_height * (1-jitter) * (rand(jitter*2)+(1-jitter)))**power
     else
       poly.annotations[:height] = 0
     end
@@ -199,7 +201,7 @@ each_triangle_with_tile_type(voronoi.polygons) do |type, triangle, pheight|
   next unless [:land, :coastline].include? type
   color = case type
           when :land
-            graphics.blend(colors[:land_high], colors[:land], pheight**2)
+            graphics.blend(colors[:land_high], colors[:land], pheight)
           else
             colors[:coastline]
           end
