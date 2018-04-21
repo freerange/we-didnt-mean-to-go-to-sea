@@ -20,7 +20,8 @@ def build_height_map(map)
   bordered_map = top_bottom +
     map.map {|row| ('X' + row + 'X').chars } +
     top_bottom
-  heights = Array.new(map.length){Array.new(map.first.length,0.1)}
+  default_height = 0.1
+  heights = Array.new(map.length){Array.new(map.first.length,default_height)}
   map.length.times do |y|
     map.first.length.times do |x|
       border_x = x + 1
