@@ -190,10 +190,10 @@ stretch_coastline(voronoi.polygons)
 colors = {
   land_high: 'yellow green',
   land: 'khaki',
-  sea: 'light blue',
+  sea: 'mint cream',
   coastline: 'dark khaki',
   unknown: 'pink',
-  coastlineline: 'white'
+  coastlineline: 'slate grey'
 }
 
 require_relative './chunky_graphics'
