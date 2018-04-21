@@ -1,17 +1,6 @@
 require_relative './voronoi'
 require 'json'
 
-MAP = ['LLLLLLLC~~',
-       'LLLLLLLC~~',
-       'LLLCLLLC~~',
-       'LLC~CHC~~~',
-       'LLC~B~~~B~',
-       'LLP~~~~~~~',
-       'LC~~~~~~~~',
-       'LC~~~~~~CC',
-       'CC~B~~CCLC',
-       '~~~~~B~CC~']
-
 def is_land_tile?(tile)
   ["L","H","P","C"].include? tile
 end
@@ -158,8 +147,6 @@ def each_icon_to_draw(map, cell_width, icon_size)
   end
 end
 
-map_width = MAP.first.length
-map_height = MAP.length
 
 def load_config(filename)
   config = JSON.parse(File.read(filename))
@@ -168,15 +155,23 @@ def load_config(filename)
   config
 end
 
-if ARGV.length != 1
-  $stderr.puts "ruby mapgen.rb config"
+def load_map(filename)
+  File.readlines(filename).map {|f| f.chomp }
+end
+
+if ARGV.length != 4
+  $stderr.puts "ruby mapgen.rb width height config map"
   exit 1
 end
 
-config = load_config(ARGV[0])
+width, height, config_file, map_file = ARGV
+width = width.to_i
+height = height.to_i
+config = load_config(config_file)
+MAP = load_map(map_file)
+map_width = MAP.first.length
+map_height = MAP.length
 
-width = config[:width]
-height = config[:height]
 number_of_points_per_grid_square = config[:points_per_grid_square]
 height_jitter = config[:height_jitter]
 height_power = config[:height_power]
