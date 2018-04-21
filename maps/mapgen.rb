@@ -85,6 +85,29 @@ def annotate_polygons_with_neighbourhood(polygons, edge_to_polygons)
   end
 end
 
+
+def annotate_polygons_with_height(polygons, map, width, height, map_width, map_height, jitter, power)
+  height_map = build_height_map(map) 
+  polygons.each do |poly|
+    grid_x = poly.center.x / (width / map_width)
+    grid_y = poly.center.y / (height / map_height)
+    if grid_x < map_width && grid_y < map_height
+      tile_height = height_map[grid_y.to_i][grid_x.to_i]
+      poly.annotations[:height] = (tile_height * (1-jitter) * (rand(jitter*2)+(1-jitter)))**power
+    else
+      poly.annotations[:height] = 0
+    end
+  end
+end
+
+def stretch_coastline(polygons)
+  polygons.each do |poly|
+    if poly.annotations[:neighbourhood] == [:coastline] || poly.annotations[:neighbourhood] == %i[coastline land]
+      poly.annotations[:tile_type] = :land
+    end
+  end
+end
+
 def each_triangle_with_tile_type(polygons)
   polygons.each do |p|
     type = p.annotations[:tile_type]
@@ -135,28 +158,6 @@ def each_icon_to_draw(map, cell_width, icon_size)
   end
 end
 
-def stretch_coastline(polygons)
-  polygons.each do |poly|
-    if poly.annotations[:neighbourhood] == [:coastline] || poly.annotations[:neighbourhood] == %i[coastline land]
-      poly.annotations[:tile_type] = :land
-    end
-  end
-end
-
-def annotate_polygons_with_height(polygons, map, width, height, map_width, map_height, jitter, power)
-  height_map = build_height_map(map) 
-  polygons.each do |poly|
-    grid_x = poly.center.x / (width / map_width)
-    grid_y = poly.center.y / (height / map_height)
-    if grid_x < map_width && grid_y < map_height
-      tile_height = height_map[grid_y.to_i][grid_x.to_i]
-      poly.annotations[:height] = (tile_height * (1-jitter) * (rand(jitter*2)+(1-jitter)))**power
-    else
-      poly.annotations[:height] = 0
-    end
-  end
-end
-
 map_width = MAP.first.length
 map_height = MAP.length
 
@@ -200,6 +201,8 @@ stretch_coastline(voronoi.polygons)
 require_relative './chunky_graphics'
 graphics = ChunkyGraphics.new(width, height, colors[:sea])
 
+filename = "map#{number_of_points_per_grid_square}-#{width}x#{height}-#{Time.now.to_i}"
+
 each_triangle_with_tile_type(voronoi.polygons) do |type, triangle, pheight|
   next unless [:land, :coastline].include? type
   color = case type
@@ -233,5 +236,4 @@ end
 
 graphics.border(border_size, colors[:border])
 
-filename = "map#{number_of_points_per_grid_square}-#{width}x#{height}-#{Time.now.to_i}"
 graphics.save(filename)
