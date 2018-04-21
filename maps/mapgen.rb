@@ -161,6 +161,17 @@ end
 map_width = MAP.first.length
 map_height = MAP.length
 
+colors = {
+  land_high: 'yellow green',
+  land: 'khaki',
+  sea: 'mint cream',
+  coastline: 'dark khaki',
+  unknown: 'pink',
+  coastlineline: 'slate grey',
+  border: 'dark grey',
+  grid: 'slate grey',
+}
+
 if ARGV.length != 3
   $stderr.puts "ruby mapgen.rb voronoi_points_per_square width height"
   exit 1
@@ -187,14 +198,6 @@ annotate_polygons_with_neighbourhood(voronoi.polygons, voronoi.edge_to_polygons)
 annotate_polygons_with_height(voronoi.polygons, MAP, width, height, map_width, map_height, height_jitter, height_power)
 stretch_coastline(voronoi.polygons)
 
-colors = {
-  land_high: 'yellow green',
-  land: 'khaki',
-  sea: 'mint cream',
-  coastline: 'dark khaki',
-  unknown: 'pink',
-  coastlineline: 'slate grey'
-}
 
 require_relative './chunky_graphics'
 graphics = ChunkyGraphics.new(width, height, colors[:sea])
@@ -223,14 +226,14 @@ each_coastline_edge(voronoi.edges) do |(x1,y1),(x2,y2)|
 end
 
 each_grid_center(MAP, width, height, map_width, map_height) do |rx,ry|
-  graphics.rect(rx, ry, rx + grid_marker_size, ry + grid_marker_size, colors[:coastlineline])
+  graphics.rect(rx, ry, rx + grid_marker_size, ry + grid_marker_size, colors[:grid])
 end
 
 each_icon_to_draw(MAP, cell_width, icon_size) do |image, x_pos, y_pos|
   graphics.icon(image, x_pos, y_pos, icon_size) if image
 end
 
-graphics.border(border_size, "dark grey")
+graphics.border(border_size, colors[:border])
 
 filename = "map#{number_of_points_per_grid_square}-#{width}x#{height}-#{Time.now.to_i}"
 graphics.save(filename)
