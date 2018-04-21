@@ -38,9 +38,9 @@ Edge = Struct.new(:v1, :v2, :annotations) do
   end
 end
 
-Polygon = Struct.new(:edges, :center, :annotations) do
-  def initialize(edges:, center:, annotations: {})
-    super(edges, center, annotations)
+Polygon = Struct.new(:edges, :center, :annotations, :neighbours) do
+  def initialize(edges:, center:, annotations: {}, neighbours: [])
+    super(edges, center, annotations, neighbours)
   end
 
   def contains_edge?(edge)
@@ -100,5 +100,14 @@ class Voronoi
         @vertex_to_polygons[e.v2] << idx
       end
     end
+
+    @polygons.each_with_index do |poly, idx|
+      neighbours = []
+      poly.edges.each do |e|
+         neighbours = neighbours + edge_to_polygons[e].reject { |eidx| eidx == idx }
+      end
+      poly.neighbours = neighbours.uniq.sort
+    end
+
   end
 end

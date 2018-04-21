@@ -76,12 +76,10 @@ end
 
 def annotate_polygons_with_neighbourhood(polygons, edge_to_polygons)
   polygons.each do |p|
-    p.annotations[:neighbourhood] = [p.annotations[:tile_type]] 
-    p.edges.each do |e|
-      edge_polygons = edge_to_polygons[e].map {|idx| polygons[idx] }
-      neighbours = edge_polygons.reject {|poly| poly == p }.map { |poly| poly.annotations[:tile_type] }
-      p.annotations[:neighbourhood] = p.annotations[:neighbourhood] + neighbours
+    p.annotations[:neighbourhood] = p.neighbours.map do |n|
+      polygons[n].annotations[:tile_type]
     end
+    p.annotations[:neighbourhood] << p.annotations[:tile_type] 
     p.annotations[:neighbourhood] = p.annotations[:neighbourhood].uniq.sort
   end
 end
