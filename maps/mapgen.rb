@@ -46,10 +46,10 @@ def build_height_map(map)
   heights
 end
 
-def type_of_map_point(x, y, width, height, map_width, map_height)
+def type_of_map_point(map, x, y, width, height, map_width, map_height)
   map_x = x / (width / map_width)
   map_y = y / (height / map_height)
-  map_tile =  MAP[map_y][map_x]
+  map_tile =  map[map_y][map_x]
   case map_tile
   when 'L'
     :land
@@ -62,9 +62,9 @@ def type_of_map_point(x, y, width, height, map_width, map_height)
   end
 end
 
-def annotate_polygons_with_tile_types(polygons, width, height, map_width, map_height)
+def annotate_polygons_with_tile_types(polygons, map, width, height, map_width, map_height)
   polygons.each do |p|
-    type = type_of_map_point(p.center.x, p.center.y, width, height, map_width, map_height)
+    type = type_of_map_point(map, p.center.x, p.center.y, width, height, map_width, map_height)
     p.annotations[:tile_type] = type
     p.edges.each do |e|
       if !e.annotations[:tile_types]
@@ -192,11 +192,10 @@ blurring = width / 60
 
 voronoi = Voronoi.new(number_of_points, width, height)
 
-annotate_polygons_with_tile_types(voronoi.polygons, width, height, map_width, map_height)
+annotate_polygons_with_tile_types(voronoi.polygons, MAP, width, height, map_width, map_height)
 annotate_polygons_with_neighbourhood(voronoi.polygons, voronoi.edge_to_polygons)
 annotate_polygons_with_height(voronoi.polygons, MAP, width, height, map_width, map_height, height_jitter, height_power)
 stretch_coastline(voronoi.polygons)
-
 
 require_relative './chunky_graphics'
 graphics = ChunkyGraphics.new(width, height, colors[:sea])
