@@ -173,6 +173,8 @@ cell_width = width / map_width.to_f
 
 icon_size = (cell_width / 2).to_i
 grid_marker_size = width / 250
+border_size = width / 160
+coastline_width = width / 250 
 
 voronoi = Voronoi.new(number_of_points, width, height)
 
@@ -213,16 +215,18 @@ each_triangle_with_tile_type(voronoi.polygons) do |type, triangle, pheight|
 end
 
 each_coastline_edge(voronoi.edges) do |(x1,y1),(x2,y2)|
-  graphics.line(x1.to_i, y1.to_i, x2.to_i, y2.to_i, colors[:coastlineline])
+  graphics.line(coastline_width, x1.to_i, y1.to_i, x2.to_i, y2.to_i, colors[:coastlineline])
 end
 
 each_grid_center(MAP, width, height, map_width, map_height) do |rx,ry|
-  graphics.rect(rx, ry, rx + grid_marker_size, ry + grid_marker_size, colors[:coastline])
+  graphics.rect(rx, ry, rx + grid_marker_size, ry + grid_marker_size, colors[:coastlineline])
 end
 
 each_icon_to_draw(MAP, cell_width, icon_size) do |image, x_pos, y_pos|
   graphics.icon(image, x_pos, y_pos, icon_size) if image
 end
+
+graphics.border(border_size, "dark grey")
 
 filename = "map#{number_of_points_per_grid_square}-#{width}x#{height}-#{Time.now.to_i}"
 graphics.save(filename)

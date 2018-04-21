@@ -31,6 +31,12 @@ class ChunkyGraphics
     end
   end
 
+  def border(width, color)
+    with_image_magick do |image|
+      image.border(width, width, color)
+    end
+  end
+
   def blend(color1, color2, factor)
     factor = (255 * factor).to_i
     ChunkyPNG::Color.interpolate_quick(ChunkyPNG::Color(color1), ChunkyPNG::Color(color2), factor)
@@ -40,14 +46,14 @@ class ChunkyGraphics
     @png.polygon(points, color_for(stroke), color_for(fill))
   end
 
-  def line(x1, y1, x2, y2, color)
+  def line(width, x1, y1, x2, y2, color)
     with_image_magick do |image|
       imgl = Magick::ImageList.new
       imgl << image
       draw = Magick::Draw.new
       path = "M #{x1} #{y1} T #{x2} #{y2}"
       draw.stroke(color)
-      draw.stroke_width(3.0)
+      draw.stroke_width(width)
       draw.path(path)
       draw.draw(imgl)
       imgl.flatten_images
