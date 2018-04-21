@@ -144,15 +144,13 @@ def stretch_coastline(polygons)
   end
 end
 
-def annotate_polygons_with_height(polygons, map, width, height, map_width, map_height)
+def annotate_polygons_with_height(polygons, map, width, height, map_width, map_height, jitter, power)
   height_map = build_height_map(map) 
   polygons.each do |poly|
     grid_x = poly.center.x / (width / map_width)
     grid_y = poly.center.y / (height / map_height)
     if grid_x < map_width && grid_y < map_height
       tile_height = height_map[grid_y.to_i][grid_x.to_i]
-      jitter = 0.15
-      power = 2.0 
       poly.annotations[:height] = (tile_height * (1-jitter) * (rand(jitter*2)+(1-jitter)))**power
     else
       poly.annotations[:height] = 0
@@ -179,12 +177,14 @@ grid_marker_size = width / 250
 border_size = width / 160
 coastline_width = width / 250 
 blurring = width / 60
+height_jitter = 0.3
+height_power = 2.0
 
 voronoi = Voronoi.new(number_of_points, width, height)
 
 annotate_polygons_with_tile_types(voronoi.polygons, width, height, map_width, map_height)
 annotate_polygons_with_neighbourhood(voronoi.polygons, voronoi.edge_to_polygons)
-annotate_polygons_with_height(voronoi.polygons, MAP, width, height, map_width, map_height)
+annotate_polygons_with_height(voronoi.polygons, MAP, width, height, map_width, map_height, height_jitter, height_power)
 stretch_coastline(voronoi.polygons)
 
 colors = {
