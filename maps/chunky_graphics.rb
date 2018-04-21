@@ -24,9 +24,9 @@ class ChunkyGraphics
     @png  = ChunkyPNG::RMagick.import(image)
   end
 
-  def blur
+  def blur(radius)
     with_image_magick do |image|
-      image = image.blur_image(0,8)
+      image = image.blur_image(0,radius)
       image = image.add_noise(Magick::GaussianNoise)
     end
   end

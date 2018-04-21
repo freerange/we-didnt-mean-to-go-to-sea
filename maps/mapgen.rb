@@ -177,6 +177,7 @@ icon_size = (cell_width / 2).to_i
 grid_marker_size = width / 250
 border_size = width / 160
 coastline_width = width / 250 
+blurring = width / 60
 
 voronoi = Voronoi.new(number_of_points, width, height)
 
@@ -208,7 +209,7 @@ each_triangle_with_tile_type(voronoi.polygons) do |type, triangle, pheight|
   graphics.polygon(triangle, color, color)
 end
 
-graphics.blur
+graphics.blur(blurring)
 
 each_triangle_with_tile_type(voronoi.polygons) do |type, triangle, pheight|
   next if [:land, :coastline].include? type
