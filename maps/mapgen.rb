@@ -1,4 +1,5 @@
 require_relative './voronoi'
+require 'json'
 
 MAP = ['LLLLLLLC~~',
        'LLLLLLLC~~',
@@ -159,26 +160,27 @@ end
 map_width = MAP.first.length
 map_height = MAP.length
 
-colors = {
-  land_high: 'yellow green',
-  land: 'khaki',
-  sea: 'mint cream',
-  coastline: 'dark khaki',
-  unknown: 'pink',
-  coastlineline: 'slate grey',
-  border: 'dark grey',
-  grid: 'slate grey',
-}
+def load_config(filename)
+  config = JSON.parse(File.read(filename))
+  config.default_proc = proc{|h, k| h.key?(k.to_s) ? h[k.to_s] : nil}
+  config
+end
 
-if ARGV.length != 3
-  $stderr.puts "ruby mapgen.rb voronoi_points_per_square width height"
+if ARGV.length != 1
+  $stderr.puts "ruby mapgen.rb config"
   exit 1
 end
 
-number_of_points_per_grid_square, width, height = ARGV.map {|i| i.to_i }
-number_of_points_per_grid_square = ARGV[0].to_i
-number_of_points =  number_of_points_per_grid_square * map_width * map_height 
+config = load_config(ARGV[0])
 
+width = config[:width]
+height = config[:height]
+number_of_points_per_grid_square = config[:points_per_grid_square]
+height_jitter = config[:height_jitter]
+height_power = config[:height_power]
+colors = Hash[config[:colors].map {|k,v| [k.to_sym, v] }]
+
+number_of_points = number_of_points_per_grid_square * map_height * map_width
 cell_width = width / map_width.to_f
 
 icon_size = (cell_width / 2).to_i
@@ -186,8 +188,6 @@ grid_marker_size = width / 250
 border_size = width / 160
 coastline_width = width / 250 
 blurring = width / 60
-height_jitter = 0.3
-height_power = 2.0
 
 voronoi = Voronoi.new(number_of_points, width, height)
 
